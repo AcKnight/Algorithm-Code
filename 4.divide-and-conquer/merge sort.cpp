@@ -55,7 +55,7 @@ int main()
     int n;
     int* input = NULL;
     //输入数据
-    cout<<"请输入数组的长度: ";
+    cout<<"请输入数组的长度:";
     cin>>n;
     input = (int *)malloc(sizeof(int)*(n));
     cout<<"请对数组赋值: ";
