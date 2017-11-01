@@ -1,40 +1,74 @@
-#include<stdio.h>
-#include<stdlib.h>
-#include<limits.h>
-int cross_middle(int *a,int l,int m,int r){
-    int i,
-        sum=0,
-        l_max=INT_MIN,
-        r_max=INT_MIN;
-    for(i=m;i>=l;i--){
-        sum+=a[i];
-        if(sum > l_max) l_max=sum;
+//
+//  main.cpp
+//  test
+//
+//  Created by Ran on 2017/10/9.
+//  Copyright © 2017年 Ran. All rights reserved.
+//
+#include <iostream>
+#include <string>
+#include <vector>
+#include <limits.h>
+using namespace std;
+//寻找跨越中点的最大子数组；
+void find_crossing_subarray(int*a, int low, int mid, int high, int& start, int& end, int& max_sum) {
+    int sum = 0;
+    int left_sum = INT32_MIN;
+    for (int i = mid; i>=low; i--) {
+        sum += a[i];
+        if(sum > left_sum){
+            left_sum = sum;
+            start = i;
+        }
     }
-    sum=0;
-    for(i=m+1;i<=r;i++){//最早i=m,出现BUG
-        sum+=a[i];
-        if(sum>r_max) r_max=sum;
+    sum =0;
+    int right_sum = INT32_MIN;
+    for(int i = mid+1;i <= high;i++){
+        sum += a[i];
+        if(sum > right_sum){
+            right_sum = sum;
+            end = i;
+        }
     }
-    return (l_max+r_max);
+    max_sum = left_sum + right_sum;
 }
-int maxsubset(int *a,int l,int r){
-    if(l == r) return a[l];
-    //if(l>r) return 0;
+void find_maximum_subarray(int*a, int low, int high, int &start, int &end, int &max_sum) {
+    if(low == high){
+        start = low;
+        end = high;
+        max_sum = a[low];
+    }
+    else{
+        int mid = low + (high - low)/2;
+        int left_start ,left_end,left_sum;
+        find_maximum_subarray(a, low, mid,left_start,left_end,left_sum);//寻找左边区间的最大子数组
+        int right_start,right_end,right_sum;
+        find_maximum_subarray(a, mid+1, high, right_start, right_end, right_sum);//寻找右边区间的最大子数组
+        int cross_start,cross_end,cross_sum;
+        find_crossing_subarray(a, low,mid, high, cross_start, cross_end,  cross_sum);//寻找跨越中间点的最大子数组
+        //比较
+        if ((left_sum >= cross_sum) && (left_sum >= right_sum)) {
+            start = left_start;
+            end = left_end;
+            max_sum = left_sum;
+        }
+        else if ((cross_sum >= left_sum) && (cross_sum >= right_sum)) {
+            start = cross_start;
+            end = cross_end;
+            max_sum = cross_sum;
+        }
+        else {
+            start = right_start;
+            end = right_end;
+            max_sum = right_sum;
+        }
+    }
+}
+int main() {
+    int a[]={13,-3,-25,20,-3,-16,-23,18,20,-7,12,-5,-22,15,-4,7};
+    int max=0,start = 0,end = 0;
+    find_maximum_subarray(a, 0, 12, start, end, max);
+    cout << "最大子区间和为：" << endl << max <<endl;
+    cout << "开始和截止下标为：" << start << ","<< end << endl;
+}
 
-    int m=(l+r)/2,
-        l_max=INT_MIN,
-        r_max=INT_MIN,
-        c_max=INT_MIN;
-    l_max=maxsubset(a,l,m);
-    r_max=maxsubset(a,m+1,r);
-    c_max=cross_middle(a,l,m,r);
-    if(l_max >= r_max&&l_max >= c_max) return l_max;
-    else if(r_max >= l_max&&r_max >= c_max) return r_max;
-    else return c_max;
-}
-int main(){
-    int a[]={3,-1,2,5,-3,4,-6,-7,1,8,-3,5,9};
-
-    printf("the maxsubset:%d\n",maxsubset(a,0,12));
-    return 0;
-}
